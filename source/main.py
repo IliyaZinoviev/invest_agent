@@ -1,7 +1,7 @@
 import asyncio
 import logging
 
-from monitoring_agent import start_monitoring_agent
+from source.monitoring_agent import start_monitoring_agent
 
 logging.basicConfig(level=logging.INFO)
 
