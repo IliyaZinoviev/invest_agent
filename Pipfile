@@ -9,6 +9,7 @@ verify_ssl = true
 aiohttp = "*"
 pytest-aiohttp = "*"
 python-dotenv = "*"
+flake8 = "*"
 
 [requires]
 python_version = "3.8"
