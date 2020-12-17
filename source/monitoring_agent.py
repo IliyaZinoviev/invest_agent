@@ -1,9 +1,8 @@
 import asyncio
 import logging
-from time import sleep
 
-from source.common import MARKET_URL, get_figi, request
-from source.config import TICKERS
+from source.analytics import percentage_ratio
+from source.common import MARKET_URL, request
 from source.requests_makers import make_limit_order_params, make_limit_order_body, make_candles_params, params, headers
 
 price_percentage_ratio_for_purchase = 3  # TODO add formula for it
@@ -66,14 +65,14 @@ async def make_limit_order_on_sell(figi: str = None, ticker: str = None, price: 
 
 
 def is_profitably_purchase(price: float, average_price: float, ticker: str) -> bool:
-    ratio = 100 - price / average_price * 100
+    ratio = percentage_ratio(price, average_price)
     decision = price < average_price and ratio > price_percentage_ratio_for_purchase
     logging.info(f'is_profitably_purchase({ticker}): {price}, {average_price}, {decision}, {ratio}')
     return decision
 
 
 def is_profitably_sell(price: float, average_price: float, ticker: str) -> bool:
-    ratio = 100 - average_price / price * 100
+    ratio = percentage_ratio(price, average_price)
     decision = price > average_price and ratio > price_percentage_ratio_for_sell
     logging.info(f'is_profitably_sell({ticker}): {price}, {average_price}, {decision}, {ratio}')
     return decision
@@ -97,15 +96,11 @@ async def manage_stock(figi, ticker, average_price):
         logging.info(e)
 
 
-async def start_monitoring_agent():
-    tasks = [get_figi(ticker)
-             for ticker in TICKERS]
-    ticker_figi_tuples = await asyncio.gather(*tasks)
+async def start_monitoring_agent(figies):
     tasks = [get_average_price(figi, ticker)
-             for ticker, figi in ticker_figi_tuples]
+             for ticker, figi in figies.items()]
     average_prices = {figi: average_price for figi, average_price in await asyncio.gather(*tasks)}
     while True:
         tasks = [manage_stock(figi, ticker, average_prices[figi])
-                 for ticker, figi in ticker_figi_tuples]
+                 for ticker, figi in figies.items]
         await asyncio.gather(*tasks)
-        sleep(5)
