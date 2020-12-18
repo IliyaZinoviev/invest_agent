@@ -1,24 +1,44 @@
+import asyncio
 import json
 from collections import OrderedDict
 from datetime import timedelta, timezone, datetime
 from itertools import product
-from pprint import pprint
 from time import sleep
 
-from source.config import TICKERS, MARKET_URL
-from source.extentions import session
-from source.requests_makers import headers
+from extentions import logger  # noqa F401
+from source.common import request, intervals, get_fee
+from source.config import TICKERS, URL
+from source.requests_input_data_makers import headers, make_candles_params
+from utils import atimeit
 
-intervals = ['hour', '30min', '15min', '10min', '5min', '3min', '1min']
 
-counter = 0
+def generate_request_params(count, figi, interval):
+    now = datetime.now(tz=timezone(timedelta(0)))
+    for i in range(count):
+        then = now - timedelta(days=1)
+        yield make_candles_params(interval, 'days', 1, figi, now=now, then=then)
+        now = then
+
+
+def subanalytics(ratios, ratio_max, ratio_min, profit_max, profit_min):
+    return {
+        # 'ratios': ratios,
+        'ratio': {
+            'max': ratio_max,
+            'min': ratio_min
+        },
+        'profit': {
+            'max': profit_max,
+            'min': profit_min
+        }
+    }
 
 
 def percentage_ratio(numerator, denominator):
     return abs(100 - numerator / denominator * 100)
 
 
-def get_stock_analytics(candles):
+def get_stock_analytics(candles, count=4):
     buying_ratios = []
     selling_ratios = []
     buying_profits = []
@@ -52,9 +72,8 @@ def get_stock_analytics(candles):
         buying_ratio = percentage_ratio(buy, average)
 
         if selling_ratio > 0 and buying_ratio > 0:
-            tax = selling_profit * 0.13
-            fee = + (buying_profit / buying_ratio * 0.05) + (selling_profit / selling_ratio) * 0.05
-            pure_selling_profits = selling_profit - (fee + tax)
+            fee = get_fee(buy, sell)
+            pure_selling_profits = selling_profit - fee
             pure_selling_ratio = selling_ratio - pure_selling_profits * selling_ratio / selling_profit
 
             if selling_ratio > 0.05 and pure_selling_profits > 0:
@@ -93,7 +112,6 @@ def get_stock_analytics(candles):
 
     average = sum(averages) / candles_lenght
 
-    count = 4
     buying_step = (max_buying_ratio - min_buying_ratio) / count
     selling_step = (max_selling_ratio - min_selling_ratio) / count
     for k in range(count + 1):
@@ -103,7 +121,7 @@ def get_stock_analytics(candles):
         selling_keys.append(selling_key)
     keys_products = list(map(lambda tuple_: (tuple_[1], tuple_[0]), product(selling_keys, buying_keys)))
     for buying_key, selling_key in keys_products:
-        possible_profits[str((buying_key, selling_key))] = 0
+        possible_profits[f'{buying_key}, {selling_key}'] = 0
     for buying_ratio, buying_profit, selling_ratio, selling_profit, average in \
             zip(buying_ratios, buying_profits, selling_ratios, selling_profits, averages):
         for buying_key, selling_key in keys_products:
@@ -111,22 +129,13 @@ def get_stock_analytics(candles):
                 possible_profit = selling_key * selling_profit / selling_ratio
                 if possible_profit < 0:
                     raise Exception('possible_profit is less than I expected')
-                possible_profits[str((buying_key, selling_key))] += possible_profit
-
-    def subanalytics(ratios, ratio_max, ratio_min, profit_max, profit_min):
-        return {
-            # 'ratios': ratios,
-            'ratio': {
-                'max': ratio_max,
-                'min': ratio_min
-            },
-            'profit': {
-                'max': profit_max,
-                'min': profit_min
-            }
-        }
+                possible_profits[f'{buying_key}, {selling_key}'] += possible_profit
+    max_possible_profit_key = max(possible_profits, key=possible_profits.get)
+    buying_key, selling_key = tuple(map(float, max_possible_profit_key.split(',')))
+    max_possible_profit_tuple = (possible_profits[max_possible_profit_key], buying_key, selling_key)
 
     return {
+        'max_possible_profit': max_possible_profit_tuple,
         'possible_profits': possible_profits,
         'buying': subanalytics(buying_ratios,
                                max_buying_ratio,
@@ -146,36 +155,45 @@ def get_stock_analytics(candles):
 
 
 async def get_stock_candles(ticker, figi, interval):
-    global counter
-    counter += 1
-    if counter == 4:
-        counter = 0
-        sleep(60)
+    url = URL + 'market/candles'
     candles = []
-    now = datetime.now(tz=timezone(timedelta(0))) - timedelta(days=1)
-    for i in range(30):
-        then = now - timedelta(days=1)
-        params = [('figi', figi),
-                  ('from', then.isoformat()),
-                  ('to', now.isoformat()),
-                  ('interval', interval)]
-        async with session.get(MARKET_URL + 'market/candles',
-                               params=params,
-                               headers=headers) as response:
-            response_data = await response.json()
-            candles += response_data['payload']['candles']
-            now = then
-    return candles
+    tasks = [request(url, headers, get_stock_candles.__name__, params=params, ticker=ticker)
+             for params in generate_request_params(30, figi, interval)]
+    responses_data = await asyncio.gather(*tasks)
+    for response_data in responses_data:
+        candles += response_data['payload']['candles']
+    return ticker, interval, candles
 
 
+@atimeit
 async def get_analytics(figies):
-    analytics_list = {}
-    async with session:
-        for ticker, interval in product(TICKERS, intervals):
-            candles = await get_stock_candles(ticker, figies[ticker], interval)
-            print(ticker, interval)
+    max_possible_profits = {}
+    max_possible_profits_dict = {}
+    analytics_dict = {ticker: {} for ticker in TICKERS}
+    ticker_interval_tuples = list(product(TICKERS, intervals))
+    ticker_interval_tuples_length = len(ticker_interval_tuples)
+    ticker_interval_tuples_length = ticker_interval_tuples_length // 4 + ticker_interval_tuples_length % 4
+
+    for offset in range(ticker_interval_tuples_length):
+        start = datetime.now()
+        tasks = [get_stock_candles(ticker, figies[ticker], interval)
+                 for ticker, interval in ticker_interval_tuples[offset*4:offset*4+4]]
+        results = await asyncio.gather(*tasks)
+        for ticker, interval, candles in results:
             analytics = get_stock_analytics(candles)
-            pprint(analytics)
-            analytics_list[f'{ticker}, {interval}'] = analytics
+            # logger.info(f'{ticker}, {interval}: \n{pformat(analytics)}')
+            analytics_dict[ticker][interval] = analytics
+            curr_max_possible_profit_tuple = analytics['max_possible_profit']
+            curr_max_possible_profit = curr_max_possible_profit_tuple[0]
+            if ticker not in max_possible_profits_dict or max_possible_profits_dict[ticker] < curr_max_possible_profit:
+                max_possible_profits_dict[ticker] = curr_max_possible_profit
+                max_possible_profit_tuple = (interval, figies[ticker]) + curr_max_possible_profit_tuple
+                max_possible_profits[ticker] = max_possible_profit_tuple
+        end = datetime.now() - start
+        delay = 60 - end.total_seconds()
+        if delay > 0 and offset + 1 != ticker_interval_tuples_length:
+            sleep(delay)
     with open('analytics.json', 'w') as file:
-        json.dump(analytics_list, file)
+        json.dump(analytics_dict, file)
+    return sorted(list(map(lambda el: (el[1][1],) + (el[0],) + (el[1][0],) + el[1][2:], max_possible_profits.items())),
+                  key=lambda el: el[2], reverse=True)

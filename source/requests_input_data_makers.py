@@ -1,15 +1,17 @@
 from datetime import timezone, timedelta, datetime
 
-from source.config import BROKER_ACC_ID, MARKET_TOKEN
+from source.config import BROKER_ACC_ID, TOKEN
 
 broker_acc_id_param = ('brokerAccountId', BROKER_ACC_ID)
-headers = {'Authorization': f'Bearer {MARKET_TOKEN}'}
+headers = {'Authorization': f'Bearer {TOKEN}'}
 params = [broker_acc_id_param]
 
 
-def make_candles_params(interval: str, interval_key: str, interval_val: int, figi: str):
-    now = datetime.now(tz=timezone(timedelta(0)))
-    then = now - timedelta(**{interval_key: interval_val})
+def make_candles_params(interval: str, interval_key: str, interval_val: int, figi: str, now=None, then=None):
+    if not now:
+        now = datetime.now(tz=timezone(timedelta(0)))
+    if not then:
+        then = now - timedelta(**{interval_key: interval_val})
     return [('figi', figi),
             ('from', then.isoformat()),
             ('to', now.isoformat()),

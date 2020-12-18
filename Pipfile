@@ -10,6 +10,7 @@ aiohttp = "*"
 pytest-aiohttp = "*"
 python-dotenv = "*"
 flake8 = "*"
+apscheduler = "*"
 
 [requires]
 python_version = "3.8"
