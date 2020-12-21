@@ -1,22 +1,18 @@
 import asyncio
 
-from source.analytics import get_analytics
-from source.common import get_figi
-from source.config import TICKERS
-from source.extentions import session
-from source.monitoring_agent import start_monitoring_agent, get_daily_result, save_daily_result
+from components.analytics import start_analyze
+from components.common.request_handlers import print_accounts
+from components.trade import start_trade
+from core.extentions import session
 
 
-async def main():
+async def start_app():
     async with session:
-        tasks = [get_figi(ticker) for ticker in TICKERS]
-        figies = {ticker: figi for ticker, figi in await asyncio.gather(*tasks)}
-        sorted_stocks = await get_analytics(figies)
-        daily_result_data = await start_monitoring_agent(sorted_stocks)
-    daily_result = get_daily_result(daily_result_data)
-    save_daily_result(daily_result)
+        await print_accounts()
 
 
 if __name__ == '__main__':
     loop = asyncio.get_event_loop()
-    loop.run_until_complete(main())
+    loop.run_until_complete(start_app())
+    loop.run_until_complete(start_analyze())
+    loop.run_until_complete(start_trade())

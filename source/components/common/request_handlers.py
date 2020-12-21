@@ -1,17 +1,8 @@
-from source.config import URL
-from source.extentions import session, logger
-from source.requests_input_data_makers import make_search_by_ticker_params, params, headers
+import asyncio
 
-
-# intervals = ['hour', '30min', '15min', '10min', '5min', '3min', '1min']
-intervals_vals_dict = {'hour': 61, '30min': 31, '15min': 16, '10min': 11, '5min': 6, '3min': 4, '1min': 2}
-intervals = ['hour']
-
-
-def get_fee(buying_price, selling_price):
-    fee = + buying_price * 0.0005 + selling_price * 0.0005
-    tax = (selling_price - buying_price - fee) * 0.13
-    return fee + tax
+from core.config import URL, TICKERS
+from core.extentions import session, logger
+from components.common.request_input_data_makers import make_search_by_ticker_params, params, headers
 
 
 async def request(url: str, headers: dict, fn_name: str, method: str = 'get', params: list = None, body: dict = None,
@@ -27,11 +18,13 @@ async def request(url: str, headers: dict, fn_name: str, method: str = 'get', pa
         raise Exception(f'{fn_name}({ticker}): {response_code}, {response_data}')
 
 
-async def get_figi(ticker: str):
+async def get_figi_and_min_price_inc(ticker: str):
     params = make_search_by_ticker_params(ticker)
     url = URL + '/market/search/by-ticker'
-    response_data = await request(url, headers, get_figi.__name__, params=params, ticker=ticker)
-    return ticker, response_data['payload']['instruments'][0]['figi']
+    response_data = await request(url, headers, get_figi_and_min_price_inc.__name__, params=params, ticker=ticker)
+    figi = response_data['payload']['instruments'][0]['figi']
+    min_price_increment = response_data['payload']['instruments'][0]['minPriceIncrement']
+    return ticker, figi, min_price_increment
 
 
 async def print_accounts():
@@ -50,3 +43,11 @@ async def print_currencies_portfolio():
     url = URL + 'portfolio/currencies'
     response_data = await request(url, headers, print_currencies_portfolio.__name__, params=params)
     logger.info(response_data['payload'])
+
+
+async def get_figies_and_min_price_incs():
+    tasks = [get_figi_and_min_price_inc(ticker) for ticker in TICKERS]
+    result = await asyncio.gather(*tasks)
+    figies = {ticker: figi for ticker, figi, _ in result}
+    min_price_incs = {ticker: float(min_price_inc_str) for ticker, _, min_price_inc_str in result}
+    return figies, min_price_incs
