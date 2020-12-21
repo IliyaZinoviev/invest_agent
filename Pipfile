@@ -4,13 +4,14 @@ url = "https://pypi.org/simple"
 verify_ssl = true
 
 [dev-packages]
+flake8 = "*"
 
 [packages]
 aiohttp = "*"
 pytest-aiohttp = "*"
 python-dotenv = "*"
-flake8 = "*"
 apscheduler = "*"
+round-utils = "*"
 
 [requires]
 python_version = "3.8"
