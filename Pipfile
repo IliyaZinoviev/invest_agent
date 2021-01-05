@@ -11,7 +11,11 @@ aiohttp = "*"
 pytest-aiohttp = "*"
 python-dotenv = "*"
 apscheduler = "*"
-round-utils = "*"
+round-utils = "2.0.1"
+aiopg = "*"
+sqlalchemy = "*"
+alembic = "*"
+psycopg2-binary = "*"
 
 [requires]
 python_version = "3.8"

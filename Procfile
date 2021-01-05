@@ -1,1 +1,1 @@
-clock: cd source && python invest_agent.py
+agent: alembic upgrade head && cd source && python app.py

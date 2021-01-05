@@ -6,9 +6,10 @@ from components.trade import start_trade
 
 
 def schedule():
-    scheduler = AsyncIOScheduler()
-    scheduler.add_job(start_analyze, 'cron', day_of_week='mon-fri', hour=9, minute=0)
-    scheduler.add_job(start_trade, 'cron', day_of_week='mon-fri', hour=9, minute=59, second=58)
+    scheduler = AsyncIOScheduler(timezone='Europe/Moscow')
+    # TODO add dynamic cron kwargs values
+    scheduler.add_job(start_analyze, 'cron', day_of_week='mon-fri', hour='5-9')
+    scheduler.add_job(start_trade, 'cron', day_of_week='mon-fri', hour='0-1,10-23', minute='0-59')
     scheduler.start()
     print('Press Ctrl+C to exit')
     try:

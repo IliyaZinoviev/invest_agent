@@ -4,15 +4,18 @@ from datetime import datetime
 from pprint import pformat
 from time import sleep
 
+from aiohttp import ClientSession
+from pytz import timezone
 from round_utils import floor, ceil
 
 from components.common import get_fee
+from components.models import DailyResult
 from components.trade.request_handlers import have_limit_order, is_stock_in_portfolio, get_current_cost, \
     make_limit_order_on_purchase, make_limit_order_on_sell, get_buying_price
 from components.trade.sandbox import clear_sandbox_portfolio, set_currencies_balance
 from components.trade.stocks_data import get_sorted_stocks
-from core.config import IS_SANDBOX_MODE
-from core.extentions import logger, session
+from core.config import config
+from core.extentions import logger, session_provider, db_engine_provider, create_db_engine
 
 
 async def manage_stock(
@@ -61,7 +64,7 @@ async def trade(stocks):
     limit_count = 50 // sorted_stocks_length
     curr_count = 0
     current_profits = {stock['ticker']: 0 for stock in stocks}
-    while datetime.now().hour != 3:
+    while (lambda now: now.hour != 1 and now.minute != 45)(datetime.now(tz=timezone('Europe/Moscow'))):
         if curr_count == limit_count:
             end = datetime.now() - start  # noqa F821
             delay = 60 - end.total_seconds()
@@ -82,21 +85,32 @@ def get_daily_result(daily_result_data: list) -> dict:
             for ticker, possible_profit, curr_profit in daily_result_data}
 
 
-def save_daily_result(daily_result: dict):
+async def save_daily_result(daily_result: dict):
     logger.info(pformat(daily_result))
-    with open('../daily_result.json', 'w') as file:
-        json.dump(daily_result, file)
+
+    json_data = json.dumps(daily_result)
+    engine = db_engine_provider[0]
+    async with engine.acquire() as conn:
+        await conn.execute(DailyResult.update().values(data=json_data).where(DailyResult.c.id == 1))
 
 
 async def start_trade():
-    sorted_stocks = get_sorted_stocks()
-    async with session:
-        if IS_SANDBOX_MODE:
+    async with await create_db_engine() as engine,\
+            ClientSession() as session:
+        db_engine_provider.append(engine)
+        sorted_stocks = await get_sorted_stocks()
+
+        session_provider.append(session)
+        if config.IS_SANDBOX_MODE:
             await clear_sandbox_portfolio()
             await set_currencies_balance('USD', 100000)
             await set_currencies_balance('RUB', 100000)
         current_profits = await trade(sorted_stocks)
-    daily_result_data = [(stock[1], stock[3], curr_profit)
-                         for stock, curr_profit in zip(sorted_stocks, current_profits)]
-    daily_result = get_daily_result(daily_result_data)
-    save_daily_result(daily_result)
+        session_provider.pop()
+
+        daily_result_data = [(stock[1], stock[3], curr_profit)
+                             for stock, curr_profit in zip(sorted_stocks, current_profits)]
+        daily_result = get_daily_result(daily_result_data)
+        await save_daily_result(daily_result)
+
+        db_engine_provider.pop()

@@ -6,7 +6,7 @@ from round_utils import ceil
 
 from components.common import get_fee
 from utils.cond import is_less, is_more
-from utils.math import get_step, get_proportions_left_nominator, get_average, get_percentage_ratio
+from utils.math import get_step, get_proportions_left_nominator, get_average, get_percentage_diff
 from utils.struct import get_val_by_keys_seq
 
 
@@ -172,8 +172,8 @@ class StockAnalyzer:
             sell = candle_sell['h']
             average = get_average(buy, sell)
             rounded_average = ceil(average, self.__min_price_inc)
-            selling_ratio = get_percentage_ratio(sell, buy)
-            buying_ratio = get_percentage_ratio(buy, rounded_average)
+            selling_ratio = get_percentage_diff(sell, buy)
+            buying_ratio = get_percentage_diff(buy, rounded_average)
             selling_profit = sell - buy
             buying_profit = rounded_average - buy
             if selling_ratio == 0 and buying_ratio == 0:

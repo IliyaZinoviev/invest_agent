@@ -4,11 +4,13 @@ from datetime import datetime
 from itertools import product
 from time import sleep
 
+from aiohttp import ClientSession
 from components.analytics.request_handlers import get_stock_candles
 from components.common import intervals
 from components.common.request_handlers import get_figies_and_min_price_incs
-from core.extentions import logger, session  # noqa F401
-from core.config import TICKERS
+from components.models import StockAnalytics, Stock
+from core.extentions import logger, session_provider, db_engine_provider, create_db_engine  # noqa F401
+from core.config import config
 from components.analytics.stock_analyzer import StockAnalyzer
 from utils.utils import atimeit
 
@@ -33,8 +35,8 @@ async def analyze(figies, min_price_incs):
 
     stocks_data = {}
     max_possible_profits = {}
-    analytics = {ticker: {} for ticker in TICKERS}
-    ticker_interval_tuples = list(product(TICKERS, intervals))
+    analytics = {ticker: {} for ticker in config.TICKERS}
+    ticker_interval_tuples = list(product(config.TICKERS, intervals))
 
     for ind in limit_iter(ticker_interval_tuples, delay, parts_count):
         tasks = [get_stock_candles(ticker, figies[ticker], interval)
@@ -49,14 +51,18 @@ async def analyze(figies, min_price_incs):
     return analytics, stocks_data
 
 
-def save_analytics(analytics_dict):
-    with open('../analytics.json', 'w') as file:
-        json.dump(analytics_dict, file)
+async def save_analytics(analytics_dict):
+    json_data = json.dumps(analytics_dict)
+    engine = db_engine_provider[0]
+    async with engine.acquire() as conn:
+        await conn.execute(StockAnalytics.update().values(data=json_data).where(StockAnalytics.c.id == 1))
 
 
-def save_stocks(stocks_data):
-    with open('../stocks.json', 'w') as file:
-        json.dump(stocks_data, file)
+async def save_stocks(stocks_data):
+    json_data = json.dumps(stocks_data)
+    engine = db_engine_provider[0]
+    async with engine.acquire() as conn:
+        await conn.execute(Stock.update().values(data=json_data).where(Stock.c.id == 1))
 
 
 def update_stocks_data(stock_data, stocks_data, max_possible_profits, ticker, figies, min_price_incs, interval):
@@ -70,8 +76,13 @@ def update_stocks_data(stock_data, stocks_data, max_possible_profits, ticker, fi
 
 @atimeit
 async def start_analyze():
-    async with session:
+    async with ClientSession() as session:
+        session_provider.append(session)
         figies, min_price_incs = await get_figies_and_min_price_incs()
         analytics, stocks_data = await analyze(figies, min_price_incs)
-    save_analytics(analytics)
-    save_stocks(stocks_data)
+        session_provider.pop()
+    async with await create_db_engine() as engine:
+        db_engine_provider.append(engine)
+        await save_analytics(analytics)
+        await save_stocks(stocks_data)
+        db_engine_provider.pop()
