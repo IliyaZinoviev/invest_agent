@@ -1,19 +1,34 @@
+from datetime import datetime
+
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 import asyncio
+
+from pytz import timezone
 
 from source.app import start_analyze
 from components.trade import start_trade
 
 
+def is_appropriate_time():
+    now = datetime.now(tz=timezone('Europe/Moscow'))
+    w = now.weekday()
+    h = now.hour
+    m = now.minute
+    night_interval_time = h == 0 or (h == 1 and m < 45)
+    return (w < 5 and (h > 10 or night_interval_time)) or (w == 6 and night_interval_time)
+
+
 def schedule():
     scheduler = AsyncIOScheduler(timezone='Europe/Moscow')
-    # TODO add dynamic cron kwargs values
-    scheduler.add_job(start_analyze, 'cron', day_of_week='mon-fri', hour='5-9')
-    scheduler.add_job(start_trade, 'cron', day_of_week='mon-fri', hour='0-1,10-23', minute='0-59')
+    scheduler.add_job(start_analyze, 'cron', day_of_week='mon-fri', hour='4')
+    scheduler.add_job(start_trade, 'cron', day_of_week='mon-fri', hour='10')
     scheduler.start()
     print('Press Ctrl+C to exit')
     try:
-        asyncio.get_event_loop().run_forever()
+        loop = asyncio.get_event_loop()
+        if is_appropriate_time():
+            loop.run_until_complete(start_trade())
+        loop.run_forever()
     except (KeyboardInterrupt, SystemExit):
         pass
 
