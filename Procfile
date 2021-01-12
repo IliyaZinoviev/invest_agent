@@ -1,0 +1,1 @@
+agent: alembic upgrade head && cd source && python app.py

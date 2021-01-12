@@ -1,9 +1,9 @@
 from datetime import timezone, timedelta, datetime
 
-from source.config import BROKER_ACC_ID, TOKEN
+from core.config import config
 
-broker_acc_id_param = ('brokerAccountId', BROKER_ACC_ID)
-headers = {'Authorization': f'Bearer {TOKEN}'}
+broker_acc_id_param = ('brokerAccountId', config.BROKER_ACC_ID)
+headers = {'Authorization': f'Bearer {config.TOKEN}'}
 params = [broker_acc_id_param]
 
 

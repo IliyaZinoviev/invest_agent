@@ -1,7 +1,7 @@
 from datetime import datetime
 from functools import wraps
 
-from extentions import logger
+from core.extentions import logger
 
 
 def atimeit(fn):
