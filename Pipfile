@@ -16,6 +16,9 @@ aiopg = "*"
 sqlalchemy = "*"
 alembic = "*"
 psycopg2-binary = "*"
+websockets = "*"
+pydantic = "*"
+simplejson = "*"
 
 [requires]
-python_version = "3.8"
+python_version = "3.9"

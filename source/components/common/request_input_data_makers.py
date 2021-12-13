@@ -1,6 +1,7 @@
 from datetime import timezone, timedelta, datetime
+from decimal import Decimal
 
-from core.config import config
+from source.core.config import config
 
 broker_acc_id_param = ('brokerAccountId', config.BROKER_ACC_ID)
 headers = {'Authorization': f'Bearer {config.TOKEN}'}
@@ -22,9 +23,13 @@ def make_limit_order_params(figi: str):
     return [('figi', figi), broker_acc_id_param]
 
 
-def make_limit_order_body(operation: str, price: float, lots: int = 1):
-    return {'lots': lots, 'operation': operation, 'price': price}
+def make_limit_order_body(operation: str, price: Decimal, lots: int = 1):
+    return {'lots': lots, 'operation': operation, 'price': float(price)}
 
 
 def make_search_by_ticker_params(ticker: str):
     return [('ticker', ticker)]
+
+
+def make_orderbook_params(figi: str, depth: int):
+    return {'figi': figi, 'depth': depth}

@@ -5,14 +5,14 @@ from itertools import product
 from time import sleep
 
 from aiohttp import ClientSession
-from components.analytics.request_handlers import get_stock_candles
-from components.common import intervals
-from components.common.request_handlers import get_figies_and_min_price_incs
-from components.models import StockAnalytics, Stock
-from core.extentions import logger, session_provider, db_engine_provider, create_db_engine  # noqa F401
-from core.config import config
-from components.analytics.stock_analyzer import StockAnalyzer
-from utils.utils import atimeit
+from source.components.analytics.request_handlers import get_stock_candles
+from source.components.common import intervals
+from source.components.common.request_handlers import get_figies_and_min_price_incs
+from source.components.models import StockAnalytics, Stock
+from source.core.extentions import session_provider, db_engine_provider, create_db_engine
+from source.core.config import config
+from source.components.analytics.stock_analyzer import StockAnalyzer
+from source.utils.utils import atimeit
 
 
 def limit_iter(struct, delay, parts_count):

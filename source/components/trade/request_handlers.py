@@ -5,6 +5,8 @@ from core.extentions import logger
 from components.common.request_input_data_makers import (make_limit_order_params, make_limit_order_body,
                                                          make_candles_params, params, headers)
 
+from source.components.common.request_handlers import get_candles
+
 
 async def have_limit_order(figi: str, ticker: str) -> bool:
     url = config.URL + 'orders'
@@ -34,10 +36,7 @@ async def get_buying_price(ticker: str) -> float:
 
 
 async def get_current_cost(figi: str, ticker: str, interval: str) -> float or None:
-    url = config.URL + 'market/candles'
-    params = make_candles_params(interval, 'minutes', intervals_vals_dict[interval], figi)
-    response_data = await request(url, headers, get_current_cost.__name__, params=params, ticker=ticker)
-    candles = response_data['payload']['candles']
+    candles = await get_candles(figi, ticker, interval)
     if len(candles) != 0:
         return candles[-1]['l']
     else:
