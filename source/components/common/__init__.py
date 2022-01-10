@@ -1,6 +1,5 @@
 from decimal import Decimal
 
-
 # intervals = ['hour', '30min', '15min', '10min', '5min', '3min', '1min']
 from source.utils.math import get_percentage_ratio
 

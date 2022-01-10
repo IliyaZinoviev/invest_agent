@@ -1,9 +1,8 @@
-from components.common import intervals_vals_dict
 from components.common.request_handlers import request
+from components.common.request_input_data_makers import (
+    headers, make_limit_order_body, make_limit_order_params, params)
 from core.config import config
 from core.extentions import logger
-from components.common.request_input_data_makers import (make_limit_order_params, make_limit_order_body,
-                                                         make_candles_params, params, headers)
 
 from source.components.common.request_handlers import get_candles
 

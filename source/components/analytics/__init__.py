@@ -5,13 +5,14 @@ from itertools import product
 from time import sleep
 
 from aiohttp import ClientSession
+
 from source.components.analytics.request_handlers import get_stock_candles
+from source.components.analytics.stock_analyzer import StockAnalyzer
 from source.components.common import intervals
 from source.components.common.request_handlers import get_figies_and_min_price_incs
-from source.components.models import StockAnalytics, Stock
-from source.core.extentions import session_provider, db_engine_provider, create_db_engine
+from source.components.models import Stock, StockAnalytics
 from source.core.config import config
-from source.components.analytics.stock_analyzer import StockAnalyzer
+from source.core.extentions import create_db_engine, db_engine_provider, session_provider
 from source.utils.utils import atimeit
 
 

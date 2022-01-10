@@ -1,12 +1,11 @@
+import asyncio
 from datetime import datetime
 
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
-import asyncio
-
+from components.trade import start_trade
 from pytz import timezone
 
 from source.app import start_analyze
-from components.trade import start_trade
 
 
 def is_appropriate_time():

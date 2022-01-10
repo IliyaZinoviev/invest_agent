@@ -5,12 +5,11 @@ Revises:
 Create Date: 2021-01-11 23:47:27.118450
 
 """
-from alembic import op
 import sqlalchemy as sa
-
-
 # revision identifiers, used by Alembic.
 from sqlalchemy import orm
+
+from alembic import op
 
 revision = 'a816d01340ea'
 down_revision = None

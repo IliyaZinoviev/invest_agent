@@ -1,7 +1,6 @@
 import asyncio
 
 from aiohttp import ClientSession
-
 from components.analytics import start_analyze
 from components.common.request_handlers import print_accounts
 from components.trade import start_trade

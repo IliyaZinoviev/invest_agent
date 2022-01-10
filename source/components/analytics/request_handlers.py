@@ -2,8 +2,8 @@ import asyncio
 
 from source.components.analytics.request_input_data_makers import generate_request_params
 from source.components.common.request_handlers import request
-from source.core.config import config
 from source.components.common.request_input_data_makers import headers
+from source.core.config import config
 
 
 async def get_stock_candles(ticker, figi, interval):

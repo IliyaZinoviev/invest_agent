@@ -3,15 +3,11 @@ name = "pypi"
 url = "https://pypi.org/simple"
 verify_ssl = true
 
-[dev-packages]
-flake8 = "*"
-
 [packages]
 aiohttp = "*"
 pytest-aiohttp = "*"
 python-dotenv = "*"
 apscheduler = "*"
-round-utils = "2.0.1"
 aiopg = "*"
 sqlalchemy = "*"
 alembic = "*"
@@ -19,6 +15,11 @@ psycopg2-binary = "*"
 websockets = "*"
 pydantic = "*"
 simplejson = "*"
+fastapi = "*"
+httpx = "*"
 
 [requires]
-python_version = "3.9"
+python_version = "3.10"
+
+[dev-packages]
+flake8 = "*"

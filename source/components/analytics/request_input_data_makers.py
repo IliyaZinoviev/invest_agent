@@ -1,4 +1,5 @@
-from datetime import timedelta, timezone, datetime
+from datetime import datetime, timedelta, timezone
+
 from components.common.request_input_data_makers import make_candles_params
 
 

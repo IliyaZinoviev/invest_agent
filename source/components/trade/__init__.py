@@ -5,17 +5,17 @@ from pprint import pformat
 from time import sleep
 
 from aiohttp import ClientSession
-from pytz import timezone
-from round_utils import floor, ceil
-
 from components.common import get_fee
 from components.models import DailyResult
-from components.trade.request_handlers import have_limit_order, is_stock_in_portfolio, get_current_cost, \
-    make_limit_order_on_purchase, make_limit_order_on_sell, get_buying_price
+from components.trade.request_handlers import (
+    get_buying_price, get_current_cost, have_limit_order, is_stock_in_portfolio, make_limit_order_on_purchase,
+    make_limit_order_on_sell)
 from components.trade.sandbox import clear_sandbox_portfolio, set_currencies_balance
 from components.trade.stocks_data import get_sorted_stocks
 from core.config import config
-from core.extentions import logger, session_provider, db_engine_provider, create_db_engine
+from core.extentions import create_db_engine, db_engine_provider, logger, session_provider
+from pytz import timezone
+from round_utils import ceil, floor
 
 
 async def manage_stock(

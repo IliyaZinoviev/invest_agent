@@ -2,11 +2,10 @@ from collections import OrderedDict
 from functools import partialmethod
 from itertools import product
 
-from round_utils import ceil
-
 from components.common import get_fee
+from round_utils import ceil
 from utils.cond import is_less, is_more
-from utils.math import get_step, get_proportions_left_nominator, get_average, get_percentage_diff
+from utils.math import get_average, get_percentage_diff, get_proportions_left_nominator, get_step
 from utils.struct import get_val_by_keys_seq
 
 

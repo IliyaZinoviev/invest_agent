@@ -1,10 +1,11 @@
+import os
+import sys
 from logging.config import fileConfig
 
 from sqlalchemy import create_engine
 
 from alembic import context
-import sys
-import os
+
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
 
@@ -23,7 +24,6 @@ os.environ['ENVIRONMENT'] = 'migration'
 
 from components.models import metadata
 from core.config import config
-
 
 target_metadata = metadata
 

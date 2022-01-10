@@ -3,15 +3,14 @@ import json
 from decimal import Decimal
 
 from aiohttp import ClientSession
+from core.extentions import logger
 
 from source.components.common.exceptions import ExternalMarketError
-from source.components.common.request_handlers import get_stocks, get_orderbook, get_candles, get_figi, request
-from source.components.common.request_input_data_makers import make_limit_order_params, make_limit_order_body, headers
+from source.components.common.request_handlers import get_stocks, request
+from source.components.common.request_input_data_makers import headers, make_limit_order_body, make_limit_order_params
 from source.components.serializers import Stock
 from source.core.config import config
 from source.core.extentions import session_provider
-
-from core.extentions import logger
 from source.utils.generators import limit_iter
 
 
@@ -35,16 +34,16 @@ async def filter_stocks(stocks: dict[str, Stock]):
         on_repeat = []
         for result in results:
             if isinstance(result, ExternalMarketError):
-                key = str(result.detail)
+                key = str(result.detail['payload'])
                 if result.code == 429:
-                   on_repeat.append(result.ticker)
+                    on_repeat.append(result.ticker)
                 else:
                     if key not in exception_dict:
                         exception_dict[key] = []
-                    exception_dict[key].append(result.args[2])
+                    exception_dict[key].append(result.ticker)
             else:
                 raise
-        tasks += list(map(lambda s: make_limit_order_on_purchase(stocks[s], Decimal('0'), 0), on_repeat))
+        tasks += [make_limit_order_on_purchase(stocks[s], Decimal('0'), 0) for s in on_repeat]
     with open('exceptions.json', 'w') as file:
         json.dump(exception_dict, file)
 

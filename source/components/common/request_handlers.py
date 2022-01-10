@@ -1,13 +1,12 @@
 import asyncio
-from typing import Callable, Any
 
 from source.components.common import intervals_vals_dict
 from source.components.common.exceptions import ExternalMarketError
-from source.components.common.request_input_data_makers import make_search_by_ticker_params, headers, params, \
-    make_candles_params, make_orderbook_params
-from source.components.serializers import StocksResponse, OrderbookResponse, Stock
+from source.components.common.request_input_data_makers import (
+    headers, make_candles_params, make_orderbook_params, make_search_by_ticker_params, params)
+from source.components.serializers import OrderbookResponse, Stock, StocksResponse
 from source.core.config import config
-from source.core.extentions import session_provider, logger
+from source.core.extentions import logger, session_provider
 
 
 async def request(url: str, headers: dict, fn_name: str, method: str = 'get', params: list = None, body: dict = None,
