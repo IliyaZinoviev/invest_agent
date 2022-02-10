@@ -25,6 +25,8 @@ class DBConfig:
 class Config(DBConfig):
     def __init__(self):
         super().__init__()
+        self.TARIFF = os.getenv('TARIFF')
+        assert self.TARIFF, 'Env var is absent'
         self.SANDBOX_TOKEN = os.getenv('SANDBOX_TOKEN')
         assert self.SANDBOX_TOKEN, 'Env var is absent'
         self.PROD_TOKEN = os.getenv('PROD_TOKEN')
@@ -43,13 +45,14 @@ class Config(DBConfig):
         self.HEROKU_ENV = os.getenv('HEROKU_ENV', False)
         if not self.HEROKU_ENV:
             self.IS_SANDBOX_MODE = input('Do you want the sandbox mode monitoring [yn]? ')
+            # self.IS_SANDBOX_MODE = 'y'
             assert self.IS_SANDBOX_MODE in ['y', 'n'], 'Only "y", "n" vals are available!'
             self.IS_SANDBOX_MODE = self.IS_SANDBOX_MODE == 'y'
         else:
             self.IS_SANDBOX_MODE = True
 
         self.TOKEN = self.SANDBOX_TOKEN if self.IS_SANDBOX_MODE else self.PROD_TOKEN
-        self.URL = self.SANDBOX_URL if self.IS_SANDBOX_MODE else self.PROD_URL
+        self.BASE_URL = self.SANDBOX_URL if self.IS_SANDBOX_MODE else self.PROD_URL
         self.BROKER_ACC_ID = self.SANDBOX_BROKER_ACC_ID if self.IS_SANDBOX_MODE else self.PROD_BROKER_ACC_ID
 
 

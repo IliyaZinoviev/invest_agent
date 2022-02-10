@@ -12,8 +12,8 @@ from components.trade.request_handlers import (
     make_limit_order_on_sell)
 from components.trade.sandbox import clear_sandbox_portfolio, set_currencies_balance
 from components.trade.stocks_data import get_sorted_stocks
-from core.config import config
-from core.extentions import create_db_engine, db_engine_provider, logger, session_provider
+from app.config import config
+from app.extentions import create_db_engine, db_engine_provider, logger, session_provider
 from pytz import timezone
 from round_utils import ceil, floor
 

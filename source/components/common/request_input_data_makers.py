@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta, timezone
 from decimal import Decimal
 
-from source.core.config import config
+from source.app.config import config
 
 broker_acc_id_param = ('brokerAccountId', config.BROKER_ACC_ID)
 headers = {'Authorization': f'Bearer {config.TOKEN}'}

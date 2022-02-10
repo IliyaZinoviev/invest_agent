@@ -1,14 +1,14 @@
 from components.common.request_handlers import request
 from components.common.request_input_data_makers import (
     headers, make_limit_order_body, make_limit_order_params, params)
-from core.config import config
-from core.extentions import logger
+from app.config import config
+from app.extentions import logger
 
 from source.components.common.request_handlers import get_candles
 
 
 async def have_limit_order(figi: str, ticker: str) -> bool:
-    url = config.URL + 'orders'
+    url = config.BASE_URL + 'orders'
     response_data = await request(url, headers, have_limit_order.__name__, params=params, ticker=ticker)
     for limit_order in response_data['payload']:
         if figi == limit_order['figi']:
@@ -17,7 +17,7 @@ async def have_limit_order(figi: str, ticker: str) -> bool:
 
 
 async def is_stock_in_portfolio(figi: str, ticker: str) -> bool:
-    url = config.URL + 'portfolio'
+    url = config.BASE_URL + 'portfolio'
     response_data = await request(url, headers, is_stock_in_portfolio.__name__, params=params, ticker=ticker)
     for position in response_data['payload']['positions']:
         if figi == position['figi']:
@@ -26,7 +26,7 @@ async def is_stock_in_portfolio(figi: str, ticker: str) -> bool:
 
 
 async def get_buying_price(ticker: str) -> float:
-    url = config.URL + 'portfolio'
+    url = config.BASE_URL + 'portfolio'
     response_data = await request(url, headers, is_stock_in_portfolio.__name__, params=params, ticker=ticker)
     for position in response_data['payload']['positions']:
         if ticker == position['ticker']:
@@ -43,7 +43,7 @@ async def get_current_cost(figi: str, ticker: str, interval: str) -> float or No
 
 
 async def make_limit_order_on_purchase(figi: str, ticker: str, price: float):
-    url = config.URL + 'orders/limit-order'
+    url = config.BASE_URL + 'orders/limit-order'
     params = make_limit_order_params(figi)
     body = make_limit_order_body('Buy', price)
     response_data = await request(url, headers, make_limit_order_on_purchase.__name__,
@@ -52,7 +52,7 @@ async def make_limit_order_on_purchase(figi: str, ticker: str, price: float):
 
 
 async def make_limit_order_on_sell(figi: str, ticker: str, price: float):
-    url = config.URL + 'orders/limit-order'
+    url = config.BASE_URL + 'orders/limit-order'
     params = make_limit_order_params(figi)
     body = make_limit_order_body('Sell', price)
     response_data = await request(url, headers, make_limit_order_on_sell.__name__,

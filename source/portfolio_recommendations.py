@@ -7,9 +7,9 @@ from source.components.common.mixins import (
     FilterEnabledStocks, GetPortfolioRecommendations, GetStockDict, StockDictItem, PortfolioRecommendationData)
 from components.common.enums import AccEnum
 from source.components.common.request_handlers import get_stocks
-from source.components.common.type_aliases import Ticker
-from source.components.serializers import Stock
-from source.core.extentions import session_provider
+from type_aliases import Ticker
+from serializers import Stock
+from source.app.extentions import session_provider
 
 
 class PortfolioRecommendations(FilterEnabledStocks, GetStockDict, GetPortfolioRecommendations):

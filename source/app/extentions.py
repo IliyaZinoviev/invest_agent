@@ -4,7 +4,7 @@ import sqlalchemy as sa
 from aiopg.sa import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 
-from source.core.config import config
+from source.app.config import config
 
 logging.basicConfig(format='%(asctime)s %(levelname)-8s %(message)s', level=logging.DEBUG, datefmt='%Y-%m-%d %H:%M:%S')
 logger = logging.getLogger()

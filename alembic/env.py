@@ -23,7 +23,7 @@ sys.path.insert(0, os.path.abspath('./source'))
 os.environ['ENVIRONMENT'] = 'migration'
 
 from components.models import metadata
-from core.config import config
+from app.config import config
 
 target_metadata = metadata
 

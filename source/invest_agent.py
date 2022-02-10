@@ -1,4 +1,4 @@
-from core.scheduler import schedule
+from app.scheduler import schedule
 
 if __name__ == '__main__':
     schedule()

@@ -1,6 +1,6 @@
 from components.common.request_handlers import request
-from core.config import config
-from core.extentions import logger
+from app.config import config
+from app.extentions import logger
 
 
 async def register():

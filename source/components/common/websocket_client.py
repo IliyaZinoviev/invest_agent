@@ -6,8 +6,8 @@ import websockets
 from aiohttp import ClientSession
 
 from source.components.common.request_handlers import get_figi
-from source.core.config import config
-from source.core.extentions import session_provider
+from source.app.config import config
+from source.app.extentions import session_provider
 
 
 async def consumer_handler(websocket):

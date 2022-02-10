@@ -9,11 +9,13 @@ from pydantic import BaseModel
 
 from source.components.common.enums import CurrencyEnum
 from source.components.common.request_handlers import get_orderbook
-from source.components.common.type_aliases import Asset, Ticker
-from source.components.serializers import OrderbookResponse, Stock
-from source.core.extentions import logger
+from type_aliases import Asset, Ticker
+from serializers.tinkoff_invest_serializers import OrderbookResponse
+from serializers.tinkoff_invest.common import Stock
+from source.app.extentions import logger
 from source.utils.generators import limit_iter
-from source.utils.utils import JsonPromptDecorator, ReadJson
+from source.utils.utils import ReadJson
+from utils.json.prompt import JsonPromptDecorator
 
 
 @dataclass
@@ -40,7 +42,6 @@ class PortfolioItem(StockDictItem):
 
 class Portfolio(BaseModel):
     __root__: dict[str, list[PortfolioItem]]
-    asset: Decimal
 
 
 @dataclass

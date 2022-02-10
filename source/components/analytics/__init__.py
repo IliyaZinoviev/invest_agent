@@ -11,8 +11,8 @@ from source.components.analytics.stock_analyzer import StockAnalyzer
 from source.components.common import intervals
 from source.components.common.request_handlers import get_figies_and_min_price_incs
 from source.components.models import Stock, StockAnalytics
-from source.core.config import config
-from source.core.extentions import create_db_engine, db_engine_provider, session_provider
+from source.app.config import config
+from source.app.extentions import create_db_engine, db_engine_provider, session_provider
 from source.utils.utils import atimeit
 
 

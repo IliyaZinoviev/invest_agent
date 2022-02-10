@@ -1,27 +1,26 @@
+from asyncio import sleep
 from datetime import datetime
-from time import sleep
 
-from source.core.extentions import logger
+from source.app.extentions import logger
 
 
-def limit_iter(struct, delay, parts_count):
+async def limit_iter(struct, delay, limit):
     struct_length = len(struct)
-    curr_parts_count = struct_length // parts_count
-    if struct_length < parts_count or (struct_length % parts_count != 0 and struct_length > parts_count):
-        curr_parts_count += 1
+    struct_part_count = struct_length // limit
+    if struct_length < limit or (struct_length % limit != 0 and struct_length > limit):
+        struct_part_count += 1
     ind = 0
-    while ind < curr_parts_count:
-        start = datetime.now()
+    while ind < struct_part_count:
         yield ind
-        logger.info(f'{(struct_length != len(struct))=}')
+        start = datetime.now()
         if struct_length != len(struct):
             struct_length = len(struct)
-            curr_parts_count = struct_length // parts_count
-            if struct_length < parts_count or (struct_length % parts_count != 0 and struct_length > parts_count):
-                curr_parts_count += 1
+            struct_part_count = struct_length // limit
+            if struct_length < limit or (struct_length % limit != 0 and struct_length > limit):
+                struct_part_count += 1
         ind += 1
         end = datetime.now() - start
         curr_delay = delay - end.total_seconds()
-        logger.info(curr_delay)
-        if curr_delay > 0 and ind + 1 != curr_parts_count:
-            sleep(curr_delay)
+        logger.info(f'{curr_delay=}')
+        if ind != struct_part_count:
+            await sleep(curr_delay)
