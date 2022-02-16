@@ -1,6 +1,6 @@
 from asyncio import sleep, Semaphore
 from datetime import datetime
-from time import time, monotonic
+from time import monotonic
 
 from httpx import Response, AsyncClient
 
@@ -55,51 +55,6 @@ class Limiter:
         if self._start:
             return self._delay < monotonic() - self._start
         return False
-
-
-
-# class TinkoffInvestApiCall(ApiCall):
-#     _semaphore_map = {
-#         'sandbox': (Semaphore(120), 120),
-#         'portfolio': (Semaphore(120), 120),
-#         'market': (Semaphore(240), 240),
-#         'orders/limit-order': (Semaphore(100), 100),
-#         'orders/market-order': (Semaphore(100), 100),
-#         'orders/cancel': (Semaphore(50), 50),
-#         'orders': (Semaphore(100), 100),
-#         'operations': (Semaphore(120), 120),
-#     }
-#     _start = None
-#     _end = None
-#
-#     def __init__(self, client: AsyncClient, path: str, *, method: str = 'GET', middleware: Middleware = None):
-#         super().__init__(client, path, method=method, middleware=middleware)
-#         self._semaphore, self._semaphore_val = self.get_semaphore(path)
-#
-#     async def _call(self, parameters: dict) -> Response:
-#         if not self._semaphore:
-#             res = await super()._call(parameters)
-#             return res
-#         if self._semaphore.locked():
-#             await sleep(60)
-#             for _ in range(self._semaphore_val):
-#                 self._semaphore.release()
-#         await self._semaphore.acquire()
-#         res = await super()._call(parameters)
-#         return res
-#
-#     @classmethod
-#     def get_semaphore(cls, path: str):
-#         key = cls.get_key(path)
-#         return cls._semaphore_map.get(key, None)
-#
-#     @classmethod
-#     def get_key(cls, path):
-#         if path[0] == '/':
-#             path = path[1:]
-#         if path.startswith('orders'):
-#             return path
-#         return path.split('/', maxsplit=1)[0]
 
 
 class TinkoffInvestApiCall(ApiCall):

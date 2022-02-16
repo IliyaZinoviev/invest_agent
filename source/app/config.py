@@ -44,16 +44,20 @@ class Config(DBConfig):
 
         self.HEROKU_ENV = os.getenv('HEROKU_ENV', False)
         if not self.HEROKU_ENV:
-            self.IS_SANDBOX_MODE = input('Do you want the sandbox mode monitoring [yn]? ')
+            self.IS_SANDBOX_MODE = input('Do you want the sandbox mode monitoring [yn]?\n>>>')
             # self.IS_SANDBOX_MODE = 'y'
             assert self.IS_SANDBOX_MODE in ['y', 'n'], 'Only "y", "n" vals are available!'
             self.IS_SANDBOX_MODE = self.IS_SANDBOX_MODE == 'y'
         else:
             self.IS_SANDBOX_MODE = True
-
         self.TOKEN = self.SANDBOX_TOKEN if self.IS_SANDBOX_MODE else self.PROD_TOKEN
         self.BASE_URL = self.SANDBOX_URL if self.IS_SANDBOX_MODE else self.PROD_URL
         self.BROKER_ACC_ID = self.SANDBOX_BROKER_ACC_ID if self.IS_SANDBOX_MODE else self.PROD_BROKER_ACC_ID
+        self.DEBUG_MODE = os.getenv('DEBUG_MODE', True)
+        if self.DEBUG_MODE:
+            self.JSON_PATH = '../json_debug'
+        else:
+            self.JSON_PATH = '../json'
 
 
 config = Config() if ENVIRONMENT != 'MIGRATION' else DBConfig()

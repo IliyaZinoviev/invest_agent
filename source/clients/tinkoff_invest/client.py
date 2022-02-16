@@ -12,7 +12,6 @@ class TinkoffClient:
 
     @staticmethod
     async def get_orderbook(stock: Stock, depth: int) -> OrderBook:
-        ticker = stock.ticker
         res = await get_orderbook(params={'figi': stock.figi, 'depth': depth})
         return OrderBook(**TinkoffInvestResp(**res).payload)
 

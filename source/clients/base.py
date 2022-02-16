@@ -10,7 +10,7 @@ def strip_none(**kwargs):
     return {k: v for k, v in kwargs.items() if v is not None}
 
 
-def handler_factory(handler, middleware):
+def handler_factory(handler: Callable, middleware: Callable[[Any, Callable], Any]):
     async def handle(data):
         return await middleware(data, handler)
 
@@ -34,7 +34,7 @@ class ApiCall:
 
         return await self._client.request(self._method, path, **parameters)
 
-    async def __call__(self, data=None, json=None, params=None, path_params=None, headers=None, **kwargs):
+    async def __call__(self, data=None, json=None, params=None, path_params=None, headers=None, **kwargs) -> Response:
         return await self._handler(
             strip_none(
                 data=data, json=json, params=params, path_params=path_params, headers=headers, **kwargs

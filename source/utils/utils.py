@@ -20,7 +20,7 @@ def atimeit(fn):
 
 
 def timeit(f):
-    if asyncio.iscoroutine(f):
+    if asyncio.iscoroutinefunction(f):
         @wraps(f)
         async def wrap(*args, **kw):
             ts = time()

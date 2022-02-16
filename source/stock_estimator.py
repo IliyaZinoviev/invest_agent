@@ -4,9 +4,9 @@ from clients.tinkoff_invest.client import TinkoffClient
 from serializers.tinkoff_invest.common import Stock
 
 
-class StockEstimator:
-    async def get_filter_by_price_less_balance(self, stocks: [Stock]):
-        pass
+# class StockEstimator:
+#     async def get_filter_by_price_less_balance(stocks: [Stock]):
+#         pass
 
 
 async def main():
